@@ -344,22 +344,24 @@
 
         /* ── Responsive ── */
         @media (max-width: 600px) {
-            body { font-size: 14px; padding: 12px 10px; }
-            #setupPage .page-title, #cardPage .page-title { font-size: 1.5em; letter-spacing: 1px; margin-bottom: 8px; }
-            .glass-card { padding: 16px 14px; border-radius: 18px; }
-            .rose-container { margin-bottom: 8px; }
-            .rose-container img { width: 70px; height: 70px; }
-            .message-box { padding: 14px 14px; margin-bottom: 8px; }
-            .message-box h3 { font-size: 1em; margin-bottom: 8px; }
-            .message-content { font-size: 0.85em; line-height: 1.6; }
-            .reply-box { padding: 14px 12px; }
-            .reply-box h3 { font-size: 1em; margin-bottom: 10px; }
-            .btn-send { width: 100%; padding: 12px; }
+            body { font-size: 16px; padding: 16px 12px; }
+            #setupPage .page-title, #cardPage .page-title { font-size: 1.6em; letter-spacing: 1px; margin-bottom: 10px; }
+            .glass-card { padding: 20px 16px; border-radius: 20px; }
+            .rose-container { margin-bottom: 10px; }
+            .rose-container img { width: 80px; height: 80px; }
+            .message-box { padding: 16px 14px; margin-bottom: 10px; }
+            .message-box h3 { font-size: 1.05em; margin-bottom: 10px; }
+            .message-content { font-size: 0.95em; line-height: 1.65; }
+            .reply-box { padding: 16px 14px; }
+            .reply-box h3 { font-size: 1.05em; margin-bottom: 12px; }
+            .reply-box label { font-size: 0.95em; }
+            .reply-box textarea { font-size: 1em; }
+            .btn-send { width: 100%; padding: 13px; font-size: 1em; }
         }
         @media (max-width: 380px) {
-            body { font-size: 12px; padding: 8px 8px; }
-            #setupPage .page-title, #cardPage .page-title { font-size: 1.3em; }
-            .message-content { font-size: 0.8em; line-height: 1.55; }
+            body { font-size: 14px; padding: 12px 10px; }
+            #setupPage .page-title, #cardPage .page-title { font-size: 1.4em; }
+            .message-content { font-size: 0.9em; line-height: 1.6; }
         }
     </style>
 </head>
@@ -458,7 +460,7 @@ for (let i = 0; i < 12; i++) createHeart();
 //  PHONE NORMALIZER
 // ═══════════════════════════════
 function normalizePhone(phone) {
-    let p = phone.replace(/[^0-9]/g, '');
+    var p = phone.replace(/[^0-9]/g, '');
     if      (p.startsWith('08'))  p = '62' + p.substring(1);
     else if (p.startsWith('8'))   p = '62' + p;
     else if (p.startsWith('0'))   p = '62' + p.substring(1);
@@ -467,26 +469,22 @@ function normalizePhone(phone) {
 }
 
 // ═══════════════════════════════
-//  SHORT ID + localStorage
+//  ENCODE / DECODE DATA KE URL
+//  Data disimpan langsung di URL — bekerja di semua browser & device
 // ═══════════════════════════════
-function makeId(len) {
-    len = len || 7;
-    var chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    var id = '';
-    for (var i = 0; i < len; i++) id += chars[Math.floor(Math.random() * chars.length)];
-    return id;
+function encodeData(data) {
+    // JSON → base64url (aman untuk URL)
+    var json = JSON.stringify(data);
+    return btoa(unescape(encodeURIComponent(json)))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function saveCard(data) {
-    var id;
-    do { id = makeId(); } while (localStorage.getItem('vd_' + id));
-    localStorage.setItem('vd_' + id, JSON.stringify(data));
-    return id;
-}
-
-function loadCard(id) {
-    var raw = localStorage.getItem('vd_' + id);
-    return raw ? JSON.parse(raw) : null;
+function decodeData(str) {
+    try {
+        var b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+        var json = decodeURIComponent(escape(atob(b64)));
+        return JSON.parse(json);
+    } catch(e) { return null; }
 }
 
 // ═══════════════════════════════
@@ -513,13 +511,14 @@ function generateLink() {
         return;
     }
 
-    var id = saveCard({ wa: cleanPhone, msg: message, from: name });
+    // Encode semua data ke URL — tidak perlu server/database
+    var encoded = encodeData({ wa: cleanPhone, msg: message, from: name });
 
     var origin   = window.location.origin;
     var pathname = window.location.pathname;
     var isValid  = origin && origin !== 'null' && !origin.includes('srcdoc') && origin !== 'about:';
     var base     = isValid ? (origin + pathname) : 'https://USERNAME.github.io/NAMA-REPO/index.html';
-    var link     = base + '?id=' + id;
+    var link     = base + '?d=' + encoded;
 
     document.getElementById('generatedLink').textContent = link;
     document.getElementById('linkBox').style.display = 'block';
@@ -553,8 +552,8 @@ function copyLink() {
 // ═══════════════════════════════
 function sendReply() {
     var replyText = document.getElementById('replyMessage').value.trim();
-    var id        = new URLSearchParams(window.location.search).get('id');
-    var card      = id ? loadCard(id) : null;
+    var params    = new URLSearchParams(window.location.search);
+    var card      = decodeData(params.get('d'));
 
     if (!replyText) {
         alert('💌 Tulis balasan kamu terlebih dahulu!');
@@ -562,17 +561,15 @@ function sendReply() {
         return;
     }
     if (!card || !card.wa) {
-        alert('❌ Data kartu tidak ditemukan.\n\nKartu hanya tersimpan di browser yang membuat kartu.\nMinta pengirim membuat kartu baru dari browser yang sama.');
+        alert('❌ Link tidak valid atau sudah rusak.\nMinta pengirim membuat kartu baru.');
         return;
     }
 
-    var greeting = card.from ? ('Hei ' + card.from + '!') : 'Hei!';
     var waText = encodeURIComponent(
-        '💝 BALASAN VALENTINE\n\n' +
-        greeting + '\n\n' +
+        'BALASAN VALENTINE\n\n' +
         replyText + '\n\n' +
         '━━━━━━━━━━━━━━━\n' +
-        '🌹 Selamat Hari Valentine!\n' +
+        'Selamat Hari Valentine!\n' +
         new Date().toLocaleDateString('id-ID', {
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         })
@@ -592,27 +589,24 @@ function sendReply() {
 // ═══════════════════════════════
 (function init() {
     var params = new URLSearchParams(window.location.search);
-    var id     = params.get('id');
+    var d      = params.get('d');
 
-    if (id) {
-        // Mode penerima
+    if (d) {
+        // Mode penerima — decode data dari URL
         document.getElementById('setupPage').style.display = 'none';
         document.getElementById('cardPage').style.display  = 'block';
 
-        var card  = loadCard(id);
+        var card  = decodeData(d);
         var msgEl = document.getElementById('displayMessage');
 
         if (card && card.msg) {
-            // Tampilkan pesan pengirim
             msgEl.innerHTML = escapeHtml(card.msg).replace(/\n/g, '<br>') +
                 (card.from ? '<div class="author">\u2014 ' + escapeHtml(card.from) + '</div>' : '');
         } else {
             msgEl.innerHTML =
-                '<em style="color:rgba(255,255,255,0.85);font-size:0.85em;line-height:1.8">' +
-                '⚠️ Pesan tidak ditemukan.<br>' +
-                'Kartu tersimpan di browser tempat kartu dibuat.<br>' +
-                'Minta pengirim membuka & membagikan link dari browser yang sama.' +
-                '</em>';
+                '<span style="color:rgba(255,255,255,0.85);font-size:0.9em;line-height:1.8">' +
+                '⚠️ Link tidak valid. Minta pengirim membuat kartu baru.' +
+                '</span>';
         }
     } else {
         // Mode pengirim
