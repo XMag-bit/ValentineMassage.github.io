@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat Hari Valentine 💝</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --pink: #ff6b9d;
+            --rose: #c44569;
+            --deep: #8B1A4A;
+            --blush: #ffe0eb;
+            --glass: rgba(255,255,255,0.18);
+            --glass-border: rgba(255,255,255,0.32);
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #c44569 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 15px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ── Floating Hearts ── */
+        .heart {
+            position: fixed;
+            width: 18px; height: 18px;
+            background: rgba(255,105,180,0.55);
+            transform: rotate(45deg);
+            animation: floatUp 14s infinite ease-in-out;
+            pointer-events: none;
+        }
+        .heart::before, .heart::after {
+            content: '';
+            position: absolute;
+            width: 18px; height: 18px;
+            background: rgba(255,105,180,0.55);
+            border-radius: 50%;
+        }
+        .heart::before { top: -9px; left: 0; }
+        .heart::after  { left: 9px; top: 0; }
+
+        @keyframes floatUp {
+            0%   { transform: translateY(100vh) rotate(45deg) scale(0); opacity:0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(-110vh) rotate(45deg) scale(1); opacity:0; }
+        }
+
+        /* ══════════════════════
+           SETUP PAGE (pengirim)
+        ══════════════════════ */
+        #setupPage {
+            max-width: 520px;
+            width: 100%;
+            z-index: 10;
+        }
+
+        #setupPage .page-title {
+            text-align: center;
+            color: #fff;
+            font-family: 'Playfair Display', serif;
+            font-size: 2em;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            letter-spacing: 2px;
+        }
+        #setupPage .page-subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9em;
+            margin-bottom: 22px;
+            font-style: italic;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 28px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+            padding: 32px 28px;
+        }
+
+        .setup-field {
+            margin-bottom: 20px;
+        }
+        .setup-field label {
+            display: block;
+            color: #fff;
+            font-size: 0.88em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .setup-field input,
+        .setup-field textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.92);
+            border: 2px solid rgba(255,255,255,0.45);
+            border-radius: 13px;
+            padding: 12px 16px;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.95em;
+            color: #333;
+            transition: all 0.3s;
+        }
+        .setup-field textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+        .setup-field input:focus,
+        .setup-field textarea:focus {
+            outline: none;
+            border-color: var(--pink);
+            box-shadow: 0 0 0 3px rgba(255,107,157,0.25);
+        }
+        .setup-field input::placeholder,
+        .setup-field textarea::placeholder { color: #aaa; font-style: italic; }
+
+        .phone-hint {
+            font-size: 0.78em;
+            color: rgba(255,255,255,0.7);
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .btn-main {
+            width: 100%;
+            background: linear-gradient(135deg, var(--pink) 0%, var(--rose) 100%);
+            color: #fff;
+            border: none;
+            padding: 14px;
+            font-size: 1.05em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            box-shadow: 0 6px 22px rgba(255,105,180,0.45);
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+        .btn-main:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(255,105,180,0.6); }
+        .btn-main:active { transform: translateY(-1px); }
+
+        /* ── Generated Link Box ── */
+        #linkBox {
+            display: none;
+            margin-top: 22px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 18px;
+            padding: 20px;
+            border: 2px solid rgba(255,105,180,0.35);
+        }
+        #linkBox h4 {
+            color: var(--rose);
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 10px;
+            font-size: 1em;
+            text-align: center;
+        }
+        #linkBox p {
+            color: #555;
+            font-size: 0.82em;
+            text-align: center;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        #generatedLink {
+            width: 100%;
+            background: #fff5f9;
+            border: 1px solid rgba(255,105,180,0.3);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.78em;
+            color: #555;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 12px;
+            min-height: 48px;
+        }
+        .btn-copy {
+            width: 100%;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: #fff;
+            border: none;
+            padding: 11px;
+            font-size: 0.95em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Lato', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-copy:hover { transform: translateY(-2px); opacity: 0.9; }
+        #copyFeedback {
+            text-align: center;
+            color: var(--rose);
+            font-size: 0.82em;
+            margin-top: 8px;
+            min-height: 18px;
+            font-weight: 600;
+        }
+
+        /* ══════════════════════
+           CARD PAGE (penerima)
+        ══════════════════════ */
+        #cardPage {
+            max-width: 600px;
+            width: 100%;
+            z-index: 10;
+            display: none;
+        }
+
+        #cardPage .page-title {
+            text-align: center;
+            color: #fff;
+            font-family: 'Playfair Display', serif;
+            font-size: 2.1em;
+            margin-bottom: 18px;
+            text-shadow: 2px 2px 12px rgba(0,0,0,0.3);
+            letter-spacing: 2px;
+        }
+
+        .rose-container {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+        .rose-container img {
+            width: 110px; height: 110px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 25px rgba(0,0,0,0.3));
+            animation: bloom 3s ease-in-out infinite;
+        }
+        /* Fallback emoji jika gambar tidak ada */
+        .rose-container .flower-emoji {
+            font-size: 80px;
+            display: none;
+            animation: bloom 3s ease-in-out infinite;
+            line-height: 1.2;
+        }
+        @keyframes bloom {
+            0%,100% { transform: scale(1) rotate(0deg); }
+            50%      { transform: scale(1.06) rotate(2deg); }
+        }
+
+        .message-box {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 22px 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.28);
+            position: relative;
+        }
+        .message-box::before {
+            content: '"';
+            font-size: 4em;
+            position: absolute;
+            top: -6px; left: 14px;
+            color: rgba(255,255,255,0.28);
+            font-family: Georgia, serif;
+            line-height: 0.8;
+        }
+        .message-box h3 {
+            color: #ffe0eb;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1em;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+        .message-content {
+            color: #c44569;
+            font-size: 1em;
+            line-height: 1.85;
+            text-align: center;
+            font-style: italic;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.25);
+            white-space: pre-wrap;
+        }
+        .author {
+            text-align: right;
+            margin-top: 14px;
+            color: rgba(255,255,255,0.9);
+            font-size: 0.92em;
+            font-style: italic;
+            font-weight: 600;
+        }
+
+        .reply-box {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 22px 20px;
+            border: 1px solid rgba(255,255,255,0.28);
+        }
+        .reply-box h3 {
+            color: #fff;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .reply-box label {
+            display: block;
+            color: rgba(255,255,255,0.9);
+            font-size: 0.88em;
+            margin-bottom: 8px;
+        }
+        .reply-box textarea {
+            width: 100%;
+            min-height: 85px;
+            background: rgba(255,255,255,0.92);
+            border: 2px solid rgba(255,255,255,0.45);
+            border-radius: 13px;
+            padding: 12px;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.95em;
+            color: #333;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+        .reply-box textarea:focus {
+            outline: none;
+            border-color: var(--pink);
+            box-shadow: 0 0 0 3px rgba(255,107,157,0.25);
+        }
+        .reply-box textarea::placeholder { color: #aaa; font-style: italic; }
+        .send-btn-wrap { margin-top: 14px; text-align: center; }
+        .btn-send {
+            background: linear-gradient(135deg, var(--pink) 0%, var(--rose) 100%);
+            color: #fff;
+            border: none;
+            padding: 13px 44px;
+            font-size: 1em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            box-shadow: 0 6px 22px rgba(255,105,180,0.45);
+            transition: all 0.3s;
+        }
+        .btn-send:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(255,105,180,0.6); }
+
+        /* ── Responsive ── */
+        @media (max-width: 480px) {
+            #setupPage .page-title, #cardPage .page-title { font-size: 1.5em; }
+            .glass-card { padding: 22px 16px; border-radius: 22px; }
+            .message-box { padding: 16px 14px; }
+            .reply-box { padding: 16px 14px; }
+            .btn-send { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     HALAMAN SETUP (untuk pengirim)
+════════════════════════════════ -->
+<div id="setupPage">
+    <h1 class="page-title">💝 BUAT KARTU VALENTINE</h1>
+    <p class="page-subtitle">Buat kartu spesial & bagikan linknya ke orang tersayang</p>
+
+    <div class="glass-card">
+        <div class="setup-field">
+            <label>📱 Nomor WhatsApp Kamu (Pengirim)</label>
+            <input type="tel" id="senderPhone" maxlength="16"
+                placeholder="Contoh: 08123456789" />
+            <p class="phone-hint">Nomor ini akan digunakan untuk menerima balasan. Tidak akan ditampilkan ke penerima.</p>
+        </div>
+
+        <div class="setup-field">
+            <label>💌 Pesan Valentine untuk Dia</label>
+            <textarea id="customMessage"
+                placeholder="Tulis pesan spesial dari hati kamu di sini...
+
+Contoh: Kamu adalah cahaya dalam hari-hariku, senyumanmu membuatku bahagia setiap saat. Selamat Hari Valentine! 🌹"></textarea>
+        </div>
+
+        <div class="setup-field">
+            <label>👤 Nama Pengirim (opsional)</label>
+            <input type="text" id="senderName"
+                placeholder="Nama kamu (atau biarkan kosong jika misterius 😊)" />
+        </div>
+
+        <button class="btn-main" onclick="generateLink()">
+            💝 Buat Kartu & Dapatkan Link
+        </button>
+
+        <div id="linkBox">
+            <h4>✨ Link Kartu Valentine Sudah Siap!</h4>
+            <p>Bagikan link ini ke orang tersayang kamu.<br>Mereka bisa langsung membaca pesan & membalas tanpa perlu memasukkan nomor WA.</p>
+            <div id="generatedLink"></div>
+            <button class="btn-copy" onclick="copyLink()">📋 Salin Link</button>
+            <p id="copyFeedback"></p>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════
+     HALAMAN KARTU (untuk penerima)
+════════════════════════════════ -->
+<div id="cardPage">
+    <h1 class="page-title">💝 SELAMAT HARI VALENTINE 💝</h1>
+
+    <div class="glass-card">
+        <!-- Gambar bunga – fallback ke emoji jika gambar gagal load -->
+        <div class="rose-container">
+            <img src="bunga.png" alt="Bunga Valentine"
+                 onerror="this.style.display='none'; document.getElementById('flowerEmoji').style.display='block';">
+            <div class="flower-emoji" id="flowerEmoji">🌹</div>
+        </div>
+
+        <div class="message-box">
+            <h3>💌 Pesan Untukmu</h3>
+            <div class="message-content" id="displayMessage">
+                I love you without knowing how, or when, or from where,<br>
+                I love you straightforwardly, without complexities or pride,<br>
+                so I love you because I know no other way than this:<br>
+                where "I" does not exist, nor "you,"<br>
+                So close that your hand on my chest is my hand,<br>
+                So close that your eyes close and I fall asleep.
+                <div class="author">— Pablo Neruda</div>
+            </div>
+        </div>
+
+        <div class="reply-box">
+            <h3>💬 Tuliskan Balasanmu</h3>
+            <label for="replyMessage">💌 Balasan kamu:</label>
+            <textarea id="replyMessage"
+                placeholder="Tulis balasan cinta kamu di sini... 💕"></textarea>
+            <div class="send-btn-wrap">
+                <button class="btn-send" onclick="sendReply()">
+                    💕 Kirim Balasan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════
+//  FLOATING HEARTS
+// ═══════════════════════════════
+function createHeart() {
+    const h = document.createElement('div');
+    h.className = 'heart';
+    h.style.left = Math.random() * 100 + 'vw';
+    h.style.animationDuration = (Math.random() * 10 + 10) + 's';
+    h.style.animationDelay = (Math.random() * 5) + 's';
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 22000);
+}
+setInterval(createHeart, 600);
+for (let i = 0; i < 12; i++) createHeart();
+
+// ═══════════════════════════════
+//  PHONE CONVERTER
+// ═══════════════════════════════
+function normalizePhone(phone) {
+    let p = phone.replace(/[^0-9]/g, '');
+    if      (p.startsWith('08'))          p = '62' + p.substring(1);
+    else if (p.startsWith('8'))           p = '62' + p;
+    else if (p.startsWith('0'))           p = '62' + p.substring(1);
+    else if (!p.startsWith('62'))         p = '62' + p;
+    return p;
+}
+
+// ═══════════════════════════════
+//  SETUP PAGE — buat link
+// ═══════════════════════════════
+function generateLink() {
+    const phone   = document.getElementById('senderPhone').value.trim();
+    const message = document.getElementById('customMessage').value.trim();
+    const name    = document.getElementById('senderName').value.trim();
+
+    if (!phone) {
+        alert('📱 Masukkan nomor WhatsApp kamu terlebih dahulu!');
+        document.getElementById('senderPhone').focus();
+        return;
+    }
+    const cleanPhone = normalizePhone(phone);
+    if (cleanPhone.length < 10 || cleanPhone.length > 15) {
+        alert('❌ Nomor WhatsApp tidak valid!\nContoh: 08123456789');
+        return;
+    }
+    if (!message) {
+        alert('💌 Tulis pesan untuk orang tersayang kamu dulu!');
+        document.getElementById('customMessage').focus();
+        return;
+    }
+
+    // Encode data ke URL params
+    // Cara ini bekerja di GitHub Pages, localhost, maupun domain custom
+    const baseUrl = window.location.origin + window.location.pathname;
+    const params  = new URLSearchParams({
+        wa:  cleanPhone,
+        msg: message,
+        ...(name && { from: name })
+    });
+    const link = baseUrl + '?' + params.toString();
+
+    document.getElementById('generatedLink').textContent = link;
+    document.getElementById('linkBox').style.display = 'block';
+    document.getElementById('linkBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function copyLink() {
+    const link = document.getElementById('generatedLink').textContent;
+    if (!link) return;
+    navigator.clipboard.writeText(link).then(() => {
+        document.getElementById('copyFeedback').textContent = '✅ Link berhasil disalin!';
+        setTimeout(() => document.getElementById('copyFeedback').textContent = '', 3000);
+    }).catch(() => {
+        // fallback
+        const el = document.createElement('textarea');
+        el.value = link;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        document.getElementById('copyFeedback').textContent = '✅ Link berhasil disalin!';
+        setTimeout(() => document.getElementById('copyFeedback').textContent = '', 3000);
+    });
+}
+
+// ═══════════════════════════════
+//  CARD PAGE — balas pesan
+// ═══════════════════════════════
+function sendReply() {
+    const replyText = document.getElementById('replyMessage').value.trim();
+    const phone     = new URLSearchParams(window.location.search).get('wa');
+    const senderName = new URLSearchParams(window.location.search).get('from');
+
+    if (!replyText) {
+        alert('💌 Tulis balasan kamu terlebih dahulu!');
+        document.getElementById('replyMessage').focus();
+        return;
+    }
+    if (!phone) {
+        alert('❌ Nomor tujuan tidak ditemukan. Pastikan kamu membuka link yang diberikan.');
+        return;
+    }
+
+    const greeting = senderName ? `Hei ${senderName}!` : 'Hei!';
+    const waText = encodeURIComponent(
+        `*💝 BALASAN VALENTINE*\n\n` +
+        `${greeting}\n\n` +
+        replyText + '\n\n' +
+        '━━━━━━━━━━━━━━━\n' +
+        '🌹 Selamat Hari Valentine!\n' +
+        new Date().toLocaleDateString('id-ID', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        })
+    );
+
+    window.open(`https://wa.me/${phone}?text=${waText}`, '_blank');
+
+    setTimeout(() => {
+        if (confirm('✅ WhatsApp telah dibuka!\n\nApakah ingin mengosongkan balasan?')) {
+            document.getElementById('replyMessage').value = '';
+        }
+    }, 800);
+}
+
+// ═══════════════════════════════
+//  ROUTER — setup vs card page
+// ═══════════════════════════════
+(function init() {
+    const params = new URLSearchParams(window.location.search);
+    const wa  = params.get('wa');
+    const msg = params.get('msg');
+
+    if (wa && msg) {
+        // Mode penerima: tampilkan kartu
+        document.getElementById('setupPage').style.display = 'none';
+        document.getElementById('cardPage').style.display  = 'block';
+
+        // Tampilkan pesan pengirim
+        const msgEl = document.getElementById('displayMessage');
+        const from  = params.get('from');
+        msgEl.innerHTML = escapeHtml(msg).replace(/\n/g, '<br>') +
+            (from ? `<div class="author">— ${escapeHtml(from)}</div>` : '');
+    } else {
+        // Mode pengirim: tampilkan halaman setup
+        document.getElementById('setupPage').style.display = 'block';
+        document.getElementById('cardPage').style.display  = 'none';
+    }
+})();
+
+function escapeHtml(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>
