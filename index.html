@@ -16,11 +16,14 @@
             --glass-border: rgba(255,255,255,0.32);
         }
 
+        /* ── Fix mobile: html & body harus full height untuk hearts ── */
+        html { height: 100%; }
+
         body {
             font-family: 'Lato', sans-serif;
             font-size: 18px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #c44569 100%);
-            min-height: 100vh;
+            min-height: 100%;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -29,29 +32,17 @@
             overflow-x: hidden;
         }
 
-        /* ── Floating Hearts ── */
-        .heart {
+        /* ══════════════════════════════════════
+           FLOATING HEARTS — fixed for mobile
+           Pakai canvas overlay agar bekerja
+           di iOS Safari & semua mobile browser
+        ══════════════════════════════════════ */
+        #heartCanvas {
             position: fixed;
-            width: 20px; height: 20px;
-            background: rgba(255,105,180,0.55);
-            transform: rotate(45deg);
-            animation: floatUp 14s infinite ease-in-out;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             pointer-events: none;
-        }
-        .heart::before, .heart::after {
-            content: '';
-            position: absolute;
-            width: 20px; height: 20px;
-            background: rgba(255,105,180,0.55);
-            border-radius: 50%;
-        }
-        .heart::before { top: -10px; left: 0; }
-        .heart::after  { left: 10px; top: 0; }
-        @keyframes floatUp {
-            0%   { transform: translateY(100vh) rotate(45deg) scale(0); opacity:0; }
-            10%  { opacity: 1; }
-            90%  { opacity: 1; }
-            100% { transform: translateY(-110vh) rotate(45deg) scale(1); opacity:0; }
+            z-index: 0;
         }
 
         /* ══════════════════════
@@ -61,6 +52,7 @@
             max-width: 560px;
             width: 100%;
             z-index: 10;
+            position: relative;
         }
         #setupPage .page-title {
             text-align: center;
@@ -206,6 +198,7 @@
             width: 100%;
             z-index: 10;
             display: none;
+            position: relative;
         }
         #cardPage .page-title {
             text-align: center;
@@ -351,7 +344,7 @@
             .rose-container img { width: 80px; height: 80px; }
             .message-box { padding: 16px 14px; margin-bottom: 10px; }
             .message-box h3 { font-size: 1.05em; margin-bottom: 10px; }
-            .message-content { font-size: 0.95em; line-height: 1.65; }
+            .message-content { font-size: 0.9em; line-height: 1.65; }
             .reply-box { padding: 16px 14px; }
             .reply-box h3 { font-size: 1.05em; margin-bottom: 12px; }
             .reply-box label { font-size: 0.95em; }
@@ -366,6 +359,9 @@
     </style>
 </head>
 <body>
+
+<!-- Canvas untuk floating hearts (bekerja di semua browser termasuk iOS) -->
+<canvas id="heartCanvas"></canvas>
 
 <!-- ════════════════════════════════
      HALAMAN SETUP (untuk pengirim)
@@ -419,13 +415,11 @@
             <div class="flower-emoji" id="flowerEmoji">🌹</div>
         </div>
 
-        <!-- Kotak pesan dari pengirim -->
         <div class="message-box">
             <h3>💌 Pesan Untukmu</h3>
             <div class="message-content" id="displayMessage"></div>
         </div>
 
-        <!-- Kotak balasan -->
         <div class="reply-box">
             <h3>💬 Tuliskan Balasanmu</h3>
             <label for="replyMessage">💌 Balasan kamu:</label>
@@ -441,20 +435,80 @@
 </div>
 
 <script>
-// ═══════════════════════════════
-//  FLOATING HEARTS
-// ═══════════════════════════════
-function createHeart() {
-    const h = document.createElement('div');
-    h.className = 'heart';
-    h.style.left = Math.random() * 100 + 'vw';
-    h.style.animationDuration = (Math.random() * 10 + 10) + 's';
-    h.style.animationDelay = (Math.random() * 5) + 's';
-    document.body.appendChild(h);
-    setTimeout(() => h.remove(), 22000);
-}
-setInterval(createHeart, 600);
-for (let i = 0; i < 12; i++) createHeart();
+// ══════════════════════════════════════════════════
+//  FLOATING HEARTS — Canvas (works on all mobile)
+//  Mengganti CSS animation yang tidak jalan di iOS
+// ══════════════════════════════════════════════════
+(function() {
+    var canvas = document.getElementById('heartCanvas');
+    var ctx    = canvas.getContext('2d');
+    var hearts = [];
+
+    function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function Heart() {
+        this.reset();
+    }
+    Heart.prototype.reset = function() {
+        this.x     = Math.random() * canvas.width;
+        this.y     = canvas.height + 20;
+        this.size  = 8 + Math.random() * 14;
+        this.speed = 0.6 + Math.random() * 1.2;
+        this.alpha = 0.5 + Math.random() * 0.5;
+        this.drift = (Math.random() - 0.5) * 0.8;
+        this.angle = Math.random() * Math.PI * 2;
+        this.spin  = (Math.random() - 0.5) * 0.04;
+    };
+    Heart.prototype.update = function() {
+        this.y     -= this.speed;
+        this.x     += this.drift;
+        this.angle += this.spin;
+        this.alpha -= 0.003;
+        if (this.y < -30 || this.alpha <= 0) this.reset();
+    };
+    Heart.prototype.draw = function() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.scale(this.size / 10, this.size / 10);
+        ctx.fillStyle = 'rgba(255, 105, 180, 0.75)';
+        ctx.beginPath();
+        // Heart shape path
+        ctx.moveTo(0, -3);
+        ctx.bezierCurveTo( 5, -8,  10, -3,   0,  5);
+        ctx.bezierCurveTo(-10, -3, -5, -8,    0, -3);
+        ctx.fill();
+        ctx.restore();
+    };
+
+    // Buat 20 hati awal di posisi acak
+    for (var i = 0; i < 20; i++) {
+        var h = new Heart();
+        h.y = Math.random() * canvas.height; // sebar merata di awal
+        hearts.push(h);
+    }
+
+    function addHeart() {
+        if (hearts.length < 35) hearts.push(new Heart());
+    }
+    setInterval(addHeart, 500);
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (var i = 0; i < hearts.length; i++) {
+            hearts[i].update();
+            hearts[i].draw();
+        }
+        requestAnimationFrame(animate);
+    }
+    animate();
+})();
 
 // ═══════════════════════════════
 //  PHONE NORMALIZER
@@ -468,22 +522,43 @@ function normalizePhone(phone) {
     return p;
 }
 
-// ═══════════════════════════════
-//  ENCODE / DECODE DATA KE URL
-//  Data disimpan langsung di URL — bekerja di semua browser & device
-// ═══════════════════════════════
-function encodeData(data) {
-    // JSON → base64url (aman untuk URL)
-    var json = JSON.stringify(data);
-    return btoa(unescape(encodeURIComponent(json)))
+// ════════════════════════════════════════════════
+//  ENKRIPSI SEDERHANA — Sembunyikan nomor WA
+//
+//  Menggunakan Base64 encoding untuk semua data
+//  sehingga nomor WA tidak terlihat langsung di URL
+//
+//  Format: ?d=<base64_encoded_json>
+// ════════════════════════════════════════════════
+function encryptData(phone, message, name) {
+    var data = {
+        w: phone,
+        m: message,
+        f: name || ''
+    };
+    var jsonStr = JSON.stringify(data);
+    return b64Encode(jsonStr);
+}
+
+function decryptData(encoded) {
+    try {
+        var jsonStr = b64Decode(encoded);
+        if (!jsonStr) return null;
+        return JSON.parse(jsonStr);
+    } catch(e) {
+        return null;
+    }
+}
+
+function b64Encode(str) {
+    return btoa(unescape(encodeURIComponent(str)))
         .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function decodeData(str) {
+function b64Decode(str) {
     try {
-        var b64 = str.replace(/-/g, '+').replace(/_/g, '/');
-        var json = decodeURIComponent(escape(atob(b64)));
-        return JSON.parse(json);
+        var s = str.replace(/-/g, '+').replace(/_/g, '/');
+        return decodeURIComponent(escape(atob(s)));
     } catch(e) { return null; }
 }
 
@@ -511,14 +586,15 @@ function generateLink() {
         return;
     }
 
-    // Encode semua data ke URL — tidak perlu server/database
-    var encoded = encodeData({ wa: cleanPhone, msg: message, from: name });
+    // Enkripsi semua data dalam satu parameter
+    var encrypted = encryptData(cleanPhone, message, name);
+    var params = 'd=' + encrypted;
 
-    var origin   = window.location.origin;
-    var pathname = window.location.pathname;
-    var isValid  = origin && origin !== 'null' && !origin.includes('srcdoc') && origin !== 'about:';
-    var base     = isValid ? (origin + pathname) : 'https://USERNAME.github.io/NAMA-REPO/index.html';
-    var link     = base + '?d=' + encoded;
+    var origin  = window.location.origin;
+    var path    = window.location.pathname;
+    var isValid = origin && origin !== 'null' && !origin.includes('srcdoc') && origin !== 'about:';
+    var base    = isValid ? (origin + path) : 'https://USERNAME.github.io/NAMA-REPO/index.html';
+    var link    = base + '?' + params;
 
     document.getElementById('generatedLink').textContent = link;
     document.getElementById('linkBox').style.display = 'block';
@@ -533,15 +609,12 @@ function copyLink() {
         setTimeout(function() { document.getElementById('copyFeedback').textContent = ''; }, 3000);
     };
     if (navigator.clipboard) {
-        navigator.clipboard.writeText(link).then(showFeedback).catch(function() {
-            var el = document.createElement('textarea');
-            el.value = link; document.body.appendChild(el); el.select();
-            document.execCommand('copy'); document.body.removeChild(el);
-            showFeedback();
-        });
-    } else {
+        navigator.clipboard.writeText(link).then(showFeedback).catch(fallbackCopy);
+    } else { fallbackCopy(); }
+    function fallbackCopy() {
         var el = document.createElement('textarea');
-        el.value = link; document.body.appendChild(el); el.select();
+        el.value = link;
+        document.body.appendChild(el); el.select();
         document.execCommand('copy'); document.body.removeChild(el);
         showFeedback();
     }
@@ -553,15 +626,22 @@ function copyLink() {
 function sendReply() {
     var replyText = document.getElementById('replyMessage').value.trim();
     var params    = new URLSearchParams(window.location.search);
-    var card      = decodeData(params.get('d'));
+    var encoded   = params.get('d');
+    
+    if (!encoded) {
+        alert('❌ Link tidak valid.\nMinta pengirim membuat kartu baru.');
+        return;
+    }
+    
+    var data = decryptData(encoded);
+    if (!data || !data.w) {
+        alert('❌ Link tidak valid.\nMinta pengirim membuat kartu baru.');
+        return;
+    }
 
     if (!replyText) {
         alert('💌 Tulis balasan kamu terlebih dahulu!');
         document.getElementById('replyMessage').focus();
-        return;
-    }
-    if (!card || !card.wa) {
-        alert('❌ Link tidak valid atau sudah rusak.\nMinta pengirim membuat kartu baru.');
         return;
     }
 
@@ -575,7 +655,7 @@ function sendReply() {
         })
     );
 
-    window.open('https://wa.me/' + card.wa + '?text=' + waText, '_blank');
+    window.open('https://wa.me/' + data.w + '?text=' + waText, '_blank');
 
     setTimeout(function() {
         if (confirm('✅ WhatsApp telah dibuka!\n\nApakah ingin mengosongkan balasan?')) {
@@ -589,22 +669,25 @@ function sendReply() {
 // ═══════════════════════════════
 (function init() {
     var params = new URLSearchParams(window.location.search);
-    var d      = params.get('d');
+    var encoded = params.get('d');
 
-    if (d) {
-        // Mode penerima — decode data dari URL
-        document.getElementById('setupPage').style.display = 'none';
-        document.getElementById('cardPage').style.display  = 'block';
+    if (encoded) {
+        // Mode penerima
+        var data = decryptData(encoded);
+        
+        if (data && data.m) {
+            document.getElementById('setupPage').style.display = 'none';
+            document.getElementById('cardPage').style.display  = 'block';
 
-        var card  = decodeData(d);
-        var msgEl = document.getElementById('displayMessage');
-
-        if (card && card.msg) {
-            msgEl.innerHTML = escapeHtml(card.msg).replace(/\n/g, '<br>') +
-                (card.from ? '<div class="author">\u2014 ' + escapeHtml(card.from) + '</div>' : '');
+            var msgEl = document.getElementById('displayMessage');
+            msgEl.innerHTML = escapeHtml(data.m).replace(/\n/g, '<br>') +
+                (data.f ? '<div class="author">\u2014 ' + escapeHtml(data.f) + '</div>' : '');
         } else {
-            msgEl.innerHTML =
-                '<span style="color:rgba(255,255,255,0.85);font-size:0.9em;line-height:1.8">' +
+            // Data tidak valid
+            document.getElementById('setupPage').style.display = 'none';
+            document.getElementById('cardPage').style.display  = 'block';
+            document.getElementById('displayMessage').innerHTML =
+                '<span style="color:rgba(255,255,255,0.85);font-size:0.9em">' +
                 '⚠️ Link tidak valid. Minta pengirim membuat kartu baru.' +
                 '</span>';
         }
